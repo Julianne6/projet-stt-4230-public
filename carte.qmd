@@ -1,0 +1,167 @@
+---
+title: "Carte des stations"
+filters:
+  - shinylive
+resources:
+  - data/donnees_iqa.rds
+---
+
+```{shinylive-r}
+#| standalone: true
+#| viewerHeight: 550
+
+library(shiny)
+library(lubridate)
+library(bslib)
+library(leaflet)
+library(dplyr)
+
+source("fonctions.R") 
+
+couleurs <- c("red", "darkred", "orange", "beige", "green", "darkgreen",
+                     "lightgreen", "blue", "darkblue", "lightblue","purple",
+                     "pink", "cadetblue", "white", "gray", "lightgray")
+
+noms_complets_regions <- c("01: Bas-Saint-Laurent", "02: Saguenay-Lac-Saint-Jean",
+      "03: Capitale-Nationale", "04: Mauricie", "05: Estrie", "06: Montréal",
+      "07: Outaouais", "08: Abitibi-Témiscamingue", "09: Côte-Nord",
+      "10: Nord-Du-Québec", "11: Gaspésie-Îles-de-la-Madeleine",
+      "12: Chaudière-Appalaches", "13: Laval", "14: Lanaudière",
+      "15: Laurentides", "16: Montérégie", "17: Centre-du-Québec")
+
+ui <- page_fluid(
+  dateRangeInput(inputId = "date", label = "Dates sélectionnées",
+  start = as.Date("2015-01-01"),
+  end = as.Date("2025-12-31"),
+  min = as.Date("2015-01-01"),
+  max = as.Date("2025-12-31"),
+  format = "dd M yyyy",
+  separator = " au ",
+  language = "fr-CH"),
+  leafletOutput("map")
+
+)
+
+server <- function(input, output, session) {
+  
+  # Données iqa
+  if (!file.exists("donnees_iqa.rds")) {
+    print("téléchargement données iqa")
+    url <- "http://localhost:4200/data/donnees_iqa.rds"
+    download.file(url, destfile = "donnees_iqa.rds", mode = "wb")
+  }
+
+  iqa <- readRDS("donnees_iqa.rds")
+  
+  # Mapping régions avec couleurs et noms
+  regions <- sort(unique(iqa$RA))
+  
+  couleurs_par_region <- setNames(
+    couleurs[seq_along(regions)],
+    regions
+  )
+  
+  pal_region <- colorFactor(
+    palette = unname(couleurs_par_region),
+    domain = as.numeric(names(couleurs_par_region))
+  )
+  
+  noms_par_region <- setNames(
+    noms_complets_regions,
+    seq_along(noms_complets_regions)
+  )
+
+  # Filtrer stations et régions selon date
+  iqa_stations_filtre <- reactive({ 
+    iqa |>
+      filter(type == "station") |>
+      filter(between(date, input$date[[1]], input$date[[2]])) |>
+      group_by(RA, id_station, latitude, longitude, type_milieu) |>
+      summarise(
+        iqa_moy_date = mean(iqa_moyen, na.rm = TRUE),
+        min_iqa = min(min_iqa, na.rm = TRUE), 
+        max_iqa = max(max_iqa, na.rm = TRUE), 
+        prop_heure_bon = mean(prop_heure_bon, na.rm = TRUE),
+        .groups = "drop"
+      )
+  })
+  
+  iqa_regions_filtre <- reactive({ 
+    iqa |>
+      filter(type == "region") |>
+      filter(between(date, input$date[[1]], input$date[[2]])) |> 
+      group_by(RA, latitude, longitude) |> 
+      summarise(
+        moy_regional_date = mean(iqa_moyen, na.rm = TRUE), 
+        min_iqa = min(min_iqa, na.rm = TRUE), 
+        max_iqa = max(max_iqa, na.rm = TRUE), 
+        prop_heure_bon = mean(prop_heure_bon, na.rm = TRUE),
+        .groups = "drop"
+      ) 
+  })
+
+  output$map <- renderLeaflet({
+    leaflet() |>
+      addTiles() |>
+      addAwesomeMarkers(
+        data = iqa_stations_filtre(),
+        lat = ~latitude,
+        lng = ~longitude,
+        popup = ~sprintf(
+          paste0(
+            "Latitude : %.3f<br>",
+            "Longitude : %.3f<br>",
+            "Proportion IQA bon : %.3f<br>",
+            "Min. : %.2f<br>",
+            "Max. : %.2f"
+          ),
+          latitude, longitude, prop_heure_bon, min_iqa, max_iqa
+        ),
+        label = ~sprintf(
+            "région: %s, IQA moyen: %.2f", 
+          noms_par_region[as.character(RA)], iqa_moy_date),
+        icon = ~icone_milieu(type_milieu, RA, couleurs_par_region),
+        group = "stations"
+        ) |> 
+      addCircleMarkers(
+        data = iqa_regions_filtre(),
+        lat = ~latitude, 
+        lng = ~longitude, 
+        color = ~unname(couleurs_par_region[as.character(RA)]),
+        radius = 20,
+        label = ~noms_par_region[as.character(RA)],
+        popup = ~sprintf(
+          paste0(
+            "Latitude : %.3f<br>",
+            "Longitude : %.3f<br>",
+            "IQA moyen: %.3f<br>",
+            "Proportion IQA bon : %.3f<br>",
+            "Min. : %.2f<br>",
+            "Max. : %.2f"
+          ),
+          latitude, longitude, moy_regional_date, prop_heure_bon, min_iqa, max_iqa
+        ),
+        stroke = FALSE, fillOpacity = 0.8, group = "regions"
+      ) |> 
+      addLegend(
+        position = "topright",
+        pal = pal_region,
+        values = as.numeric(names(couleurs_par_region)),
+        title = "Région", 
+        opacity = 1
+      ) |> 
+      addLayersControl(
+        position = "bottomleft",
+        overlayGroups = c("stations", "regions"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
+    })
+}
+
+shinyApp(ui, server)
+
+## file: fonctions.R
+{{< include fonctions.R >}}
+```
+
+```

@@ -1,0 +1,29 @@
+project:
+  type: website
+  output-dir: docs
+  post-render: encrypt.r
+  
+lang: fr
+
+website:
+  title: "Évolution de la qualité de l'air"
+  navbar:
+    left:
+      - text: "Faits saillants"
+        href: index.qmd
+      - text: "Carte"
+        href: carte.qmd
+      - text: "Évolution temporelle"
+        href: evolution_iqa.qmd
+      - text: "Lien avec le cancer"
+        href: cancer.qmd
+        
+format:
+  html:
+    theme: cosmo
+    toc: true
+    embed-resources: false
+
+filters:
+  - shinylive
+  

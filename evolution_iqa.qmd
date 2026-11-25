@@ -1,0 +1,51 @@
+---
+title: "Évolution de la qualité de l'air"
+format: dashboard
+filters:
+  - shinylive
+
+---
+
+
+```{r}
+#| message: false
+#| warning: false
+#| include: false
+
+library(dplyr)
+library(ggplot2)
+
+  iqa <- readRDS("./data/donnees_iqa.rds")
+
+```
+
+
+## Row {height=60%}
+
+```{r}
+#| title: Iqa moyen toutes région
+
+iqa |>
+  filter(type == "station") |>
+   ggplot() +
+   geom_point(mapping = (aes(x=date, y=iqa_moyen))) 
+  
+```
+
+## Row {height=40%}
+
+```{r}
+#| title: IQA minimal par région
+iqa |>
+   filter(type == "region") |>
+   ggplot() +
+   geom_point(mapping = (aes(x=date, y=min_iqa))) 
+```
+
+```{r}
+#| title: IQA maximal par région
+iqa |>
+   filter(type == "region") |>
+   ggplot() +
+   geom_point(mapping = (aes(x=date, y=max_iqa))) 
+```
