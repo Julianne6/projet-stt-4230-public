@@ -73,18 +73,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Recherche"
   }
 }</script>
-<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-window.netlifyIdentity.on('login', (user) => {
-window.netlifyIdentity.refresh(true).then(() => {
-  console.log(user);
-});
-});
-window.netlifyIdentity.on('logout', (user) => {
-window.location.href = '/login';
-});
-window.netlifyIdentity.init({ container: '#netlify' });
-</script>
 
 
 </head>
@@ -108,7 +96,7 @@ window.netlifyIdentity.init({ container: '#netlify' });
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
     <a class="nav-link active" href="./index.html" aria-current="page"> 
-<span class="menu-text">Accueil</span></a>
+<span class="menu-text">Faits saillants</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./carte.html"> 
@@ -133,14 +121,8 @@ window.netlifyIdentity.init({ container: '#netlify' });
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Sur cette page</h2>
-   
-  <ul>
-  <li><a href="#accueil" id="toc-accueil" class="nav-link active" data-scroll-target="#accueil">Accueil</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
@@ -148,15 +130,8 @@ window.netlifyIdentity.init({ container: '#netlify' });
 
 
 
-<section id="accueil" class="level1 unnumbered">
-<h1 class="unnumbered">Accueil</h1>
-Veuillez vous connecter:
-<div data-netlify-identity-menu="">
-
-</div>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

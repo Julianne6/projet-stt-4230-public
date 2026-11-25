@@ -78,18 +78,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Recherche"
   }
 }</script>
-<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-window.netlifyIdentity.on('login', (user) => {
-window.netlifyIdentity.refresh(true).then(() => {
-  console.log(user);
-});
-});
-window.netlifyIdentity.on('logout', (user) => {
-window.location.href = '/login';
-});
-window.netlifyIdentity.init({ container: '#netlify' });
-</script>
 
 
 </head>
@@ -113,7 +101,7 @@ window.netlifyIdentity.init({ container: '#netlify' });
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
     <a class="nav-link" href="./index.html"> 
-<span class="menu-text">Accueil</span></a>
+<span class="menu-text">Faits saillants</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./carte.html" aria-current="page"> 
@@ -174,8 +162,9 @@ library(lubridate)
 library(bslib)
 library(leaflet)
 library(dplyr)
+library(munsell)
 
-source("fonctions.R")
+source("fonctions.R") 
 
 couleurs &lt;- c("red", "darkred", "orange", "beige", "green", "darkgreen",
                      "lightgreen", "blue", "darkblue", "lightblue","purple",
@@ -203,14 +192,14 @@ ui &lt;- page_fluid(
 
 server &lt;- function(input, output, session) {
   
-  # # Données iqa 
-  # if (!file.exists("donnees_iqa.rds")) {
-  #   print("téléchargement données iqa")
-  #   url &lt;- "http://localhost:4200/data/donnees_iqa.rds"
-  #   download.file(url, destfile = "donnees_iqa.rds", mode = "wb")
-  # }
-  # 
-  # iqa &lt;- readRDS("donnees_iqa.rds")
+  # Données iqa
+  if (!file.exists("donnees_iqa.rds")) {
+    print("téléchargement données iqa")
+    url &lt;- "http://localhost:4200/data/donnees_iqa.rds"
+    download.file(url, destfile = "donnees_iqa.rds", mode = "wb")
+  }
+
+  iqa &lt;- readRDS("donnees_iqa.rds")
   
   # Mapping régions avec couleurs et noms
   regions &lt;- sort(unique(iqa$RA))
@@ -322,10 +311,6 @@ shinyApp(ui, server)
 ## file: fonctions.R
 
 # Pour la carte
-# 
-
-# Données iqa 
-iqa &lt;- readRDS("../data/processed/donnees_iqa.rds")
 icone_milieu &lt;- function(milieu, RA, couleurs_par_region) {
   makeAwesomeIcon(
     icon = case_when(
@@ -338,6 +323,15 @@ icone_milieu &lt;- function(milieu, RA, couleurs_par_region) {
     iconColor = "black",
     markerColor = unname(couleurs_par_region[as.character(RA)])
   )
+}
+
+cat_iqa &lt;- function(x) {
+  case_when (
+    is.na(x) ~ NA_character_,
+    round(x) &lt;= 26 ~ "bon",
+    round(x) &lt;= 50 ~ "acceptable",
+    .default = "mauvais"
+      )
 }
 </code></pre>
 <p>```</p>
