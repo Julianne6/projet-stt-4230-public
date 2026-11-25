@@ -2,8 +2,7 @@
 title: "Carte des stations"
 filters:
   - shinylive
-resources:
-  - data/donnees_iqa.rds
+
 ---
 
 ```{shinylive-r}
@@ -46,13 +45,8 @@ ui <- page_fluid(
 server <- function(input, output, session) {
   
   # Données iqa
-  if (!file.exists("donnees_iqa.rds")) {
-    print("téléchargement données iqa")
-    url <- "http://localhost:4200/data/donnees_iqa.rds"
-    download.file(url, destfile = "donnees_iqa.rds", mode = "wb")
-  }
-
-  iqa <- readRDS("donnees_iqa.rds")
+  url_donnees <- "https://raw.githubusercontent.com/Julianne6/projet-stt-4230-public/main/data/donnees_iqa.rds"
+  iqa <- readRDS(url(url_donnees, open = "rb"))
   
   # Mapping régions avec couleurs et noms
   regions <- sort(unique(iqa$RA))

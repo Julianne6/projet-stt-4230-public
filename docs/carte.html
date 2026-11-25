@@ -193,13 +193,18 @@ ui &lt;- page_fluid(
 server &lt;- function(input, output, session) {
   
   # Données iqa
-  if (!file.exists("donnees_iqa.rds")) {
-    print("téléchargement données iqa")
-    url &lt;- "http://localhost:4200/data/donnees_iqa.rds"
-    download.file(url, destfile = "donnees_iqa.rds", mode = "wb")
-  }
+  # if (!file.exists("donnees_iqa.rds")) {
+  #   print("téléchargement données iqa")
+  #   # url &lt;- "http://localhost:4200/data/donnees_iqa.rds"
+  #   url &lt;- "https://github.com/Julianne6/projet-stt-4230-public/blob/main/data/donnees_iqa.rds"
+  #   download.file(url, destfile = "donnees_iqa.rds", mode = "wb")
+  # }
+  
+  # iqa &lt;- readRDS("donnees_iqa.rds")
+  # url_donnees &lt;- "https://github.com/Julianne6/projet-stt-4230-public/raw/refs/heads/main/data/donnees_iqa.rds"
+  url_donnees &lt;- "https://raw.githubusercontent.com/Julianne6/projet-stt-4230-public/main/data/donnees_iqa.rds"
 
-  iqa &lt;- readRDS("donnees_iqa.rds")
+  iqa &lt;- readRDS(url(url_donnees, open = "rb"))
   
   # Mapping régions avec couleurs et noms
   regions &lt;- sort(unique(iqa$RA))
